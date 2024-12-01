@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Loan Management System</title>
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #282c34;
+            color: #fafafa;
+        }
+
+        /* Top Navigation Bar */
+        .top-nav {
+            background-color: #00adb5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 20px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .top-nav-title {
+            color: #fff;
+            font-size: 24px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* Signup Form Container */
+        .signup-container {
+            margin-top: 100px; /* Space for fixed nav */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 80vh;
+        }
+
+        .signup-box {
+            background-color: #393e46;
+            border-radius: 10px;
+            padding: 20px 30px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .signup-box h2 {
+            color: #00adb5;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .signup-box label {
+            font-size: 14px;
+            color: #fafafa;
+        }
+
+        .signup-box input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #00adb5;
+            border-radius: 5px;
+            background-color: #282c34;
+            color: #fafafa;
+        }
+
+        .signup-box button {
+            width: 100%;
+            padding: 10px;
+            background-color: #00adb5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .signup-box button:hover {
+            background-color: #007b7e;
+            transform: scale(1.05);
+        }
+
+        .signup-box a {
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+            color: #00adb5;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .signup-box a:hover {
+            text-decoration: underline;
+        }
+
+        /* Loader Styles */
+        .loader {
+            display: none;
+            border: 6px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 6px solid #00adb5;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="top-nav-title">GREEN VEST BACKEND</div>
+    </nav>
+
+    <!-- Signup Container -->
+    <div class="signup-container">
+        <div class="signup-box">
+            <h2>Sign Up</h2>
+            <form id="signup-form">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="fullName" placeholder="Enter your full name" required>
+
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Create a password" required>
+                
+                <label for="confirm-password">Confirm Password</label>
+                <input type="password" id="confirm-password" placeholder="Confirm your password" required>
+                
+                <button type="submit">Sign Up</button>
+                <a href="backendLogin.html">Already have an account? Login</a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loader -->
+    <div class="loader" id="loader"></div>
+
+    <!-- Firebase Configuration -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCWoEdf5p3T8DfJX3IWw3s6PNWKjXdo9-s",
+            authDomain: "robot-1ed2b.firebaseapp.com",
+            databaseURL: "https://robot-1ed2b-default-rtdb.firebaseio.com",
+            projectId: "robot-1ed2b",
+            storageBucket: "robot-1ed2b.appspot.com",
+            messagingSenderId: "71843575877",
+            appId: "1:71843575877:android:61b8b09dc5bf5d21158b2c",
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        const form = document.getElementById("signup-form");
+        const loader = document.getElementById("loader");
+
+        form.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const fullName = form.fullName.value.trim();
+            const email = form.email.value.trim();
+            const password = form.password.value.trim();
+            const confirmPassword = document.getElementById("confirm-password").value.trim();
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match!");
+                return;
+            }
+
+            const user = { fullName, email, password };
+
+            loader.style.display = "block"; // Show loader
+
+            const usersRef = ref(database, "backend_users");
+            push(usersRef, user)
+                .then(() => {
+                    alert("Account created successfully!");
+                    loader.style.display = "none"; // Hide loader
+                    window.location.href = "backendLogin.html"; // Redirect to login page
+                })
+                .catch((error) => {
+                    console.error("Error saving data:", error);
+                    alert("Error occurred during signup. Please try again.");
+                    loader.style.display = "none"; // Hide loader
+                });
+        });
+    </script>
+</body>
+</html>

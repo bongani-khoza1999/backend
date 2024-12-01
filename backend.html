@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Management System</title>
+    <style>
+        /* General Styles */
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #282c34;
+            color: #fafafa;
+        }
+
+        /* Top Navigation Bar */
+        .top-nav {
+            background-color: #00adb5;
+            display: flex;
+            justify-content: flex-end; /* Align options to the right */
+            padding: 10px 20px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            flex-wrap: wrap; /* Allows items to wrap in smaller screens */
+        }
+
+        .top-nav a {
+            color: #fff;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .top-nav a:hover {
+            background-color: #007b7e;
+            transform: scale(1.1);
+        }
+
+        /* Profile Icon */
+        .profile-icon {
+            background-image: url('https://www.iconarchive.com/download/i108208/google/noto-emoji-animals-nature/22215-dog.ico'); /* Placeholder image, replace with actual profile icon */
+            background-size: contain;
+            background-repeat: no-repeat;
+            width: 40px;
+            height: 40px;
+            margin-left: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* Container Styles */
+        #container {
+            margin-top: 70px; /* For fixed top-nav spacing */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 1s ease-in;
+        }
+
+        #title {
+            color: #00adb5;
+            font-size: 28px;
+            margin-bottom: 20px;
+            animation: slideIn 1s ease-out;
+        }
+
+        /* Table Styles */
+      #json-table {
+        width: 80%; /* Reduce width to 80% of the container */
+        border-collapse: collapse;
+        max-width: 800px; /* Set a smaller maximum width */
+        margin-bottom: 20px;
+        animation: fadeIn 1.5s ease-in;
+    }
+
+    #json-table th, #json-table td {
+        border: 1px solid #333;
+        padding: 6px; /* Reduce padding */
+        text-align: left;
+        font-size: 14px; /* Reduce font size */
+    }
+
+    #json-table th {
+        background-color: #00adb5;
+        color: #fff;
+    }
+
+    #json-table td {
+        background-color: #444;
+        color: #fafafa;
+    }
+
+        #json-table tr:hover td {
+            background-color: #393e46;
+        }
+
+        /* Pagination */
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            animation: fadeIn 1.5s ease-in;
+        }
+
+        .pagination button {
+            background-color: #00adb5;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .pagination button:hover {
+            background-color: #007b7e;
+            transform: scale(1.1);
+        }
+
+        .pagination button:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+
+        /* Animation Effects */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        /* Button Group */
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .delete-button, .approve-button {
+            padding: 8px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            transition: transform 0.2s;
+        }
+
+        .delete-button {
+            background-color: #ff4757;
+            color: white;
+        }
+
+        .delete-button:hover {
+            background-color: #d63031;
+            transform: scale(1.1);
+        }
+
+        .approve-button {
+            background-color: #1e90ff;
+            color: white;
+        }
+
+        .approve-button:hover {
+            background-color: #0077ff;
+            transform: scale(1.1);
+        }
+
+        /* Responsive Styles */
+        @media screen and (max-width: 768px) {
+            /* Adjusting Top Navigation */
+            .top-nav {
+                justify-content: space-between;
+                padding: 10px;
+            }
+
+            .top-nav a {
+                padding: 8px 15px;
+            }
+
+            /* Adjusting Table Layout for Mobile */
+            #json-table th, #json-table td {
+                font-size: 12px;
+                padding: 6px;
+            }
+
+            #json-table {
+                font-size: 12px;
+            }
+
+            /* Adjust Container Layout */
+            #container {
+                padding: 15px;
+            }
+
+            /* Pagination */
+            .pagination {
+                flex-direction: column;
+            }
+
+            .pagination button {
+                padding: 6px 12px;
+                margin: 5px 0;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            /* Further adjustments for small screens */
+            #title {
+                font-size: 22px;
+            }
+
+            .profile-icon {
+                width: 30px;
+                height: 30px;
+            }
+
+            #json-table th, #json-table td {
+                font-size: 10px;
+                padding: 4px;
+            }
+
+            .pagination button {
+                font-size: 12px;
+            }
+
+            /* Adjust container padding for very small screens */
+            #container {
+                padding: 10px;
+            }
+        }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <a href="backend.html">Loan requests</a>
+        <a href="approved_loans.html">Approved Loans</a>
+        <a href="denied_loans.html">Rejected Loans</a>
+        <a href="adminStokvela.html">Investments</a> 
+        <div class="profile-icon" onclick="alert('Profile Clicked')"></div> <!-- Profile Icon -->
+    </nav>
+
+    <!-- Container -->
+    <div id="container">
+        <h1 id="title">Clients on request</h1>
+        <table id="json-table">
+            <thead>
+                <tr>
+                    <th>Full Names</th>
+                    <th>Gender</th>
+                    <th>Date of birth</th>
+                    <th>ID number</th> <!-- Added -->
+                    <th>Email</th> <!-- Moved up -->
+                    <th>Phone number</th>
+                    <th>Address</th>
+                    <th>Bank Name</th>
+                    <th>Account Number</th>
+                    <th>Amount</th>
+                    <th>Due Date</th>
+                    <th>Purpose</th>
+                    <th>Time Stamp</th>
+                    <th>Action</th>
+                    
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="pagination" id="pagination"></div>
+    </div>
+
+    <script>
+        // Firebase configuration for the "robot" project
+        const firebaseConfig = {
+            apiKey: "AIzaSyCWoEdf5p3T8DfJX3IWw3s6PNWKjXdo9-s",
+            authDomain: "robot-1ed2b.firebaseapp.com",
+            databaseURL: "https://robot-1ed2b-default-rtdb.firebaseio.com",
+            projectId: "robot-1ed2b",
+            storageBucket: "robot-1ed2b.appspot.com",
+            messagingSenderId: "71843575877",
+            appId: "1:71843575877:android:61b8b09dc5bf5d21158b2c"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const dbRef = firebase.database().ref("loan_applications");
+
+        let loansData = [];
+        let currentPage = 1;
+        const rowsPerPage = 10;
+
+        // Fetch data from Firebase
+        function fetchData() {
+            dbRef.on("value", (snapshot) => {
+                const data = snapshot.val();
+                loansData = Object.keys(data || {}).map(key => ({ id: key, ...data[key] }));
+                displayPage(currentPage);
+                setupPagination();
+            });
+        }
+
+        // Display rows for the current page
+        function displayPage(page) {
+            const tableBody = document.querySelector("#json-table tbody");
+            tableBody.innerHTML = "";
+
+            const start = (page - 1) * rowsPerPage;
+            const end = start + rowsPerPage;
+
+            loansData.slice(start, end).forEach(loan => {
+                const formattedTimestamp = new Date(loan.timestamp).toLocaleString(); // Format the timestamp
+                const row = `
+                    <tr>
+                        <td>${loan.name}</td>
+                        <td>${loan.gender}</td>
+                        <td>${loan.dob}</td>
+                        <td>${loan.idNumber}</td>
+                        <td>${loan.email}</td>
+                        <td>${loan.phone}</td>
+                        <td>${loan.address}</td>
+                        <td>${loan.bank}</td>
+                        <td>${loan.accountNumber}</td>
+                        <td>${loan.amount}</td>
+                        <td>${loan.dueDate}</td>
+                        <td>${loan.purpose}</td>
+                        <td>${formattedTimestamp}</td>
+                        <td>
+                            <div class="button-group">
+                                <button class="approve-button" onclick="approveLoan('${loan.id}')">Approve</button>
+                                <button class="delete-button" onclick="deleteLoan('${loan.id}')">Reject</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tableBody.innerHTML += row;
+            });
+        }
+
+        // Setup pagination
+        function setupPagination() {
+            const pageCount = Math.ceil(loansData.length / rowsPerPage);
+            const paginationContainer = document.getElementById("pagination");
+
+            paginationContainer.innerHTML = ""; // Clear existing pagination
+
+            // Previous button
+            const prevButton = document.createElement("button");
+            prevButton.textContent = "Prev";
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener("click", () => changePage(currentPage - 1));
+            paginationContainer.appendChild(prevButton);
+
+            // Page number buttons
+            for (let i = 1; i <= pageCount; i++) {
+                const pageButton = document.createElement("button");
+                pageButton.textContent = i;
+                pageButton.disabled = i === currentPage;
+                pageButton.addEventListener("click", () => changePage(i));
+                paginationContainer.appendChild(pageButton);
+            }
+
+            // Next button
+            const nextButton = document.createElement("button");
+            nextButton.textContent = "Next";
+            nextButton.disabled = currentPage === pageCount;
+            nextButton.addEventListener("click", () => changePage(currentPage + 1));
+            paginationContainer.appendChild(nextButton);
+        }
+
+        // Change page
+        function changePage(page) {
+            currentPage = page;
+            displayPage(currentPage);
+            setupPagination();
+        }
+
+        // Approve loan
+        function approveLoan(loanId) {
+    const loan = loansData.find(loan => loan.id === loanId);
+
+    if (loan) {
+        // Get the data of the loan to move it to the approved loans
+        const loanData = { ...loan };
+
+        // Add the loan to the "approved_loans" path
+        const approvedLoansRef = firebase.database().ref("approved_loans").push();
+        approvedLoansRef.set(loanData)
+            .then(() => {
+                // After successfully adding to approved loans, delete from "loan_applications"
+                const loanRef = firebase.database().ref("loan_applications").child(loanId);
+                loanRef.remove()
+                    .then(() => {
+                        alert("Loan approved and moved to approved loans with ID: " + loanId);
+                        fetchData(); // Refresh the table after moving and deleting
+                    })
+                    .catch(error => {
+                        alert("Error deleting loan from loan applications: " + error.message);
+                    });
+            })
+            .catch(error => {
+                alert("Error approving loan: " + error.message);
+            });
+    }
+}
+
+        // Delete loan
+        function deleteLoan(loanId) {
+    const loan = loansData.find(loan => loan.id === loanId);
+
+    if (loan) {
+        // Add the loan data to the "rejected_loans" path
+        const rejectedLoansRef = firebase.database().ref("rejected_loans").push();
+        rejectedLoansRef.set(loan)
+            .then(() => {
+                // After successfully adding to rejected loans, remove it from "loan_applications"
+                const loanRef = firebase.database().ref(`loan_applications/${loanId}`);
+                loanRef.remove()
+                    .then(() => {
+                        alert("Loan rejected successfully!");
+                        // Refresh the data to update the table
+                        fetchData();
+                    })
+                    .catch(error => {
+                        console.error("Error removing loan:", error);
+                        alert("Failed to remove loan. Please try again.");
+                    });
+            })
+            .catch(error => {
+                console.error("Error rejecting loan:", error);
+                alert("Failed to reject loan. Please try again.");
+            });
+    } else {
+        alert("Loan not found. Please refresh and try again.");
+    }
+}
+
+
+        // Initial fetch
+        fetchData();
+    </script>
+</body>
+</html>
+
+
+
+
+

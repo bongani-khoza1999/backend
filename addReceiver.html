@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add a Member</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #333;
+      color: white;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Header Styles */
+    h1 {
+      text-align: center;
+      color: #fff;
+      margin-top: 40px;
+    }
+
+    /* Form Styles */
+    form {
+      max-width: 500px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #444;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      font-size: 14px;
+      color: #ddd;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    input, select {
+      width: 80%; /* Decreased input width */
+      padding: 8px; /* Decreased padding */
+      margin: 8px 0 20px 0;
+      border: 1px solid #555;
+      border-radius: 4px;
+      font-size: 14px; /* Decreased font size */
+      background-color: #333;
+      color: white;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background-color: #4CAF50;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    /* Loader Style */
+    #loader {
+      display: none;
+      font-size: 20px;
+      color: #fff;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    /* Success/Error Message */
+    .message {
+      text-align: center;
+      padding: 15px;
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      display: none;
+    }
+
+    .success {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .error {
+      background-color: #f44336;
+      color: white;
+    }
+
+    /* Pop-up Style for Success */
+    #success-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #4CAF50;
+      padding: 20px;
+      color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+      z-index: 9999;
+    }
+
+    #success-popup button {
+      background-color: #fff;
+      color: #4CAF50;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 10px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    #success-popup button:hover {
+      background-color: #45a049;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <h1>A Member Receiving Money</h1>
+
+  <!-- Form for collecting user details -->
+  <form>
+    <label for="fullName">Full Name:</label>
+    <input type="text" id="fullName" name="fullName" required><br>
+
+    <label for="gender">Gender:</label>
+    <select id="gender" name="gender" required>
+      <option value="Male">Male</option>
+      <option value="Female">Female</option>
+      <option value="Other">Other</option>
+    </select><br>
+
+    <label for="idNumber">ID Number:</label>
+    <input type="text" id="idNumber" name="idNumber" value="0000000000" required><br>
+
+
+    <label for="accountNumber">Account Number:</label>
+    <input type="text" id="accountNumber" name="accountNumber" required><br>
+
+    <label for="accountName">Account Name:</label>
+    <input type="text" id="accountName" name="accountName" required><br>
+
+    <label for="amount">Amount Received:</label>
+    <input type="number" id="amount" name="amount" min="0" step="0.01" required><br>
+
+    <label for="totalAmount">Total Amount to Receive:</label>
+    <input type="number" id="totalAmount" name="totalAmount" min="0" step="0.01" required><br>
+
+    <label for="email">Email:</label>
+    <input type="email" id="email" name="email" required><br>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <!-- Loader element -->
+  <div id="loader">Loading...</div>
+
+  <!-- Success/Error Message -->
+  <div id="message" class="message"></div>
+
+  <!-- Success Pop-up -->
+  <div id="success-popup"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCWoEdf5p3T8DfJX3IWw3s6PNWKjXdo9-s",
+      authDomain: "robot-1ed2b.firebaseapp.com",
+      databaseURL: "https://robot-1ed2b-default-rtdb.firebaseio.com",
+      projectId: "robot-1ed2b",
+      storageBucket: "robot-1ed2b.appspot.com",
+      messagingSenderId: "71843575877",
+      appId: "1:71843575877:android:61b8b09dc5bf5d21158b2c",
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const database = getDatabase(app);
+
+    const form = document.querySelector("form");
+    const loader = document.getElementById("loader");
+    const successPopup = document.getElementById("success-popup");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const fullName = form.fullName.value.trim();
+      const gender = form.gender.value;
+      const idNumber = form.idNumber.value.trim();
+      const accountNumber = form.accountNumber.value.trim();
+      const accountName = form.accountName.value.trim();
+      const amount = form.amount.value.trim();
+      const totalAmount = form.totalAmount.value.trim();
+      const email = form.email.value.trim();
+
+      if (!fullName || !gender || !idNumber || !accountNumber || !accountName || !amount || !totalAmount || !email) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      loader.style.display = "block";
+
+      const memberRef = ref(database, `memberReceiving/${idNumber}`);
+
+      try {
+        await set(memberRef, {
+          fullName,
+          gender,
+          idNumber,
+          accountNumber,
+          accountName,
+          amount,
+          totalAmount,
+          email,
+          createdAt: new Date().toISOString(),
+        });
+
+        loader.style.display = "none";
+        successPopup.innerHTML = `
+          <p>Member added or updated successfully!</p>
+          <p>Amount received: ${amount}</p>
+          <p>Total Amount to Receive: ${totalAmount}</p>
+          <button id="closePopupButton">Close</button>
+        `;
+        successPopup.style.display = "block";
+
+        document.getElementById("closePopupButton").addEventListener("click", () => {
+          successPopup.style.display = "none";
+        });
+
+        form.reset();
+      } catch (error) {
+        console.error("Error adding or updating member:", error);
+        loader.style.display = "none";
+      }
+    });
+  </script>
+</body>
+</html>
